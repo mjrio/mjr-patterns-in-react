@@ -52,9 +52,32 @@ Copyright (c) 2018 Euricom nv.
 
 > https://github.com/mjrio/mjr-patterns-in-react
 
-```
+```bash
+# Clone repo
 git clone https://github.com/mjrio/mjr-patterns-in-react
+
+# Open slides in presentation mode
+npm install reveal-md -g
+reveal-md slides.md
+
+# Copy exercise starter
+cp mjr-patterns-in-react/exercises/react c:/temp
 ```
+
+---
+
+## Agenda
+
+React patterns you should know
+
+- Props in Depth
+- Higher Order Components
+- Error Boundery
+- Render Props
+- Context
+- Hooks (optionally)
+
+All these patterns should help you abstract/share code
 
 ---
 
@@ -114,13 +137,17 @@ const FancyButton = props => (
 
 ### Passing down props
 
-```js
-const Details = ({ name, language }) => (
-  <p>
-    {name} works with {language}
-  </p>
+```
+const App = () => (
+  <Layout
+    title="I'm here to stay"
+    language="JavaScript"
+    name="Alex"
+  />
 );
+```
 
+```js
 const Layout = ({ title, ...props }) => (
   <div>
     <h1>{title}</h1>
@@ -129,13 +156,34 @@ const Layout = ({ title, ...props }) => (
 );
 ```
 
+```js
+const Details = ({ name, language }) => (
+  <p>
+    {name} works with {language}
+  </p>
+);
 ```
+
+<!-- prettier-ignore -->
+***
+
+## Children props
+
+```js
+const Panel = props => (
+  <div className="panel">
+    <h1>{props.title}</h1>
+    <div>{props.children}</div>
+  </div>
+);
+```
+
+```js
 const App = () => (
-  <Layout
-    title="I'm here to stay"
-    language="JavaScript"
-    name="Alex"
-  />
+  <Panel title="Hello world">
+    <p>Lorem ipsum dolor sit amet</p>
+    <strong>Finibus Bonorum</strong>
+  </Panel>
 );
 ```
 
@@ -210,8 +258,8 @@ import PropTypes from 'prop-types';
 
 class MyComponent extends Component {
   static propTypes = {
-    title:PropTypes.string.isRequired,
-    count:PropTypes.number,
+    title: PropTypes.string.isRequired,
+    count: PropTypes.number,
   };
   static defaultProps = {
     count: 10
@@ -494,6 +542,18 @@ Error Bounderies can be placed on any level
 ## Basic Sample
 
 <!-- prettier-ignore -->
+```js
+const App = () => (
+  <ShareSecretToLife render={({ secretToLife }) => (
+      <h1>
+        <b>{secretToLife}</b>
+      </h1>
+    )}
+  />
+);
+```
+
+<!-- prettier-ignore -->
 ```jsx
 const SECRET_TO_LIFE = 'If it feels good, do it';
 
@@ -504,18 +564,6 @@ default export class ShareSecretToLife extends Component {
     </div>;
   }
 }
-```
-
-<!-- prettier-ignore -->
-```js
-const ShareSecretWithWorld = () => (
-  <ShareSecretToLife render={({ secretToLife }) => (
-      <h1>
-        <b>{secretToLife}</b>
-      </h1>
-    )}
-  />
-);
 ```
 
 <!-- prettier-ignore -->
@@ -647,10 +695,6 @@ export default class App extends React.Component {
 ### Context Consumer
 
 Some component deeper in the hierarchy...
-
-```jsx
-const Toolbar = props => <ThemedButton />;
-```
 
 Use a Consumer to read the current theme context. <br>React will find the closest theme Provider above and use its value.
 

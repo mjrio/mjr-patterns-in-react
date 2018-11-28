@@ -29,4 +29,19 @@ class Toggle extends React.Component {
   }
 }
 
+/*
+import Toggle, { Switch } from './components/Toggle';
+
+<Toggle
+  onToggle={(e) => console.log(e)}
+  render={({ on, toggle }) => (
+    <div>
+      <Switch on={on} onClick={toggle} />
+      {on ? 'on' : 'off'}
+    </div>
+  )}
+/>
+
+*/
+
 export default Toggle;
