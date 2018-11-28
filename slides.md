@@ -48,6 +48,16 @@ Copyright (c) 2018 Euricom nv.
 
 ---
 
+## Slides, Starter and Solutions
+
+> https://github.com/mjrio/mjr-patterns-in-react
+
+```
+git clone https://github.com/mjrio/mjr-patterns-in-react
+```
+
+---
+
 # Props In Depth
 
 > Know your props
