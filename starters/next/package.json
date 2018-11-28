@@ -1,0 +1,23 @@
+{
+  "name": "tst",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "serve": "next",
+    "build": "next build",
+    "start": "next start"
+  },
+  "author": "“Peter <“peter.cosemans@gmail.com”>",
+  "license": "ISC",
+  "dependencies": {
+    "@zeit/next-css": "^1.0.1",
+    "bootstrap": "3",
+    "next": "^7.0.2",
+    "react": "^16.6.3",
+    "react-dom": "^16.6.3"
+  },
+  "devDependencies": {
+    "file-loader": "^2.0.0"
+  }
+}

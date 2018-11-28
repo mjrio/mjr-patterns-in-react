@@ -94,7 +94,71 @@ const FancyButton = props => (
   </button>
 );
 
-<FancyButton title="save the user">Save</FancyButton>;
+<FancyButton title="save the user" onClick="handlClick">
+  Save
+</FancyButton>;
+```
+
+<!-- prettier-ignore -->
+***
+
+### Passing down props
+
+```js
+const Details = ({ name, language }) => (
+  <p>
+    {name} works with {language}
+  </p>
+);
+
+const Layout = ({ title, ...props }) => (
+  <div>
+    <h1>{title}</h1>
+    <Details {...props} />
+  </div>
+);
+```
+
+```
+const App = () => (
+  <Layout
+    title="I'm here to stay"
+    language="JavaScript"
+    name="Alex"
+  />
+);
+```
+
+<!-- prettier-ignore -->
+***
+
+## Props as function
+
+```jsx
+const MyComponent = props => (
+  <Fragment>
+    <p>{name}</p>
+    <button disabled={!props.isActive(props.name)}>
+      Close
+    </button>
+  </Fragment>
+);
+```
+
+```jsx
+class App extends Component {
+  isActive = (name) => {
+    return (name === 'default')
+  }
+  render() {
+    return (
+      <MyComponent name="default" isActive={this.isActive} />
+      <MyComponent name="primary" isActive={this.isActive} />
+    )
+  }
+}
+
+
 ```
 
 <!-- prettier-ignore -->
@@ -102,14 +166,13 @@ const FancyButton = props => (
 
 ## Validating
 
-Validate props
-
 ```jsx
 import PropTypes from 'prop-types';
 
 function MyComponent(props) {
   return (
-    <h3>{this.props.title}<h3>
+    <h3>{props.title}<h3>
+    <p>{props.count * 100}</p>
   );
 }
 
@@ -155,41 +218,30 @@ class MyComponent extends Component {
 
 Static members requires babel-preset-stage-2
 
----
-
-# State In Depth
-
-> Know your state
-
 <!-- prettier-ignore -->
 ***
 
-### Calculated state fields
+### Props in Initial State
 
-Don't use state for calculated fields
+```js
+import React, { Component } from 'react';
 
-```jsx
-export default class MyComponent extends Component {
+class MyComponent extends Component {
   constructor(props) {
+    super(props);
     this.state = {
-      fullName: `${props.firstName} ${props.lastName}`,
+      someValue: props.someValue,
     };
   }
-  render() {
-    return <p>{this.state.fullName}</p>;
-  }
 }
 ```
 
-Better
+When you change the props next time, the state won’t be updated
 
-```jsx
-export default class MyComponent extends Component {
-  render() {
-    const fullName = `${this.props.firstName} ${
-      this.props.lastName
-    }`;
-    return <p>{fullName}</p>;
+```
+componentWillReceiveProps(nextProps){
+  if (nextProps.someValue !== this.props.someValue) {
+    this.setState({ someValue: nextProps.someValue })
   }
 }
 ```
@@ -197,30 +249,25 @@ export default class MyComponent extends Component {
 <!-- prettier-ignore -->
 ***
 
-## SetState is async
+## Exercise
 
-```js
-this.setState({
-  ...this.state,
-  counter: 1,
-});
-console.log(this.state); // State is not updated yet
+Create a Button component with specific style
+
+<!-- prettier-ignore -->
+```html
+<!-- bootstrap default button; class="btn btn-default" -->
+<Button>Default</Button>
+
+<!-- bootstrap primary button; class="btn btn-primary" -->
+<Button primary>Primary</Button>
+
+<!-- bootstrap danger button; class="btn btn-danger" -->
+<Button danger>Don't click me</Button>
 ```
 
-Fix: result callback
+<img src="./images/buttons.png "/>
 
-```js
-this.setState(
-    (state, props) => ({
-        ...state
-        counter: 1,
-    }),
-    (state) => {
-        // now the state is changed
-        consoler.log('new state: ', state)
-    }
-);
-```
+Optionally you can add validation
 
 ---
 
@@ -231,22 +278,38 @@ this.setState(
 <!-- prettier-ignore -->
 ***
 
-### Higher-Order Component (HOC)
-
-A sample
+### Simple Component
 
 ```jsx
 import React from 'react';
 
-const withSecretToLife = OrgComponent => {
-  class HOC extends Component {
-    render() {
+const SimpleComponent = props => {
+  return <p>SecretToLife: {props.secretToLife}</p>;
+};
+
+export default SimpleComponent;
+```
+
+<!-- prettier-ignore -->
+***
+
+### Higher-Order Component (HOC)
+
+A sample
+
+<!-- prettier-ignore -->
+```jsx
+import React from 'react';
+
+const withSecretToLife = (WrappedComponent) => {
+  const HigherOrderComponent = props => {
+      const msg = 'If it feels good, do it';
       return (
-        <OrgComponent secretToLife={42} {...this.props} />
+        <WrappedComponent secretToLife={msg} {...props} />
       );
     }
   }
-  return HOC;
+  return HigherOrderComponent;
 };
 export default withSecretToLife;
 ```
@@ -254,7 +317,7 @@ export default withSecretToLife;
 <!-- prettier-ignore -->
 ***
 
-### Higher-Order Component
+### Using HOC
 
 <!-- prettier-ignore -->
 ```js
@@ -263,7 +326,7 @@ import withSecretToLife from './withSecretToLife';
 
 const App = props => (
   <div>
-    The secret to life is {props.secretToLife}.
+    Hi {props.name}, the secret to life is {props.secretToLife}.
   </div>
 )
 
@@ -274,41 +337,140 @@ And use as a normal app component
 
 ```js
 import App from './app.js';
-render(<App />, element);
+render(<App name="peter" />, element);
 ```
 
 <!-- prettier-ignore -->
 ***
 
-### Practical usecase
+### Class based HOC
 
-The HOC
+<!-- prettier-ignore -->
+```jsx
+import React from 'react';
 
-```js
-const withLogger = (prefix = '') => WrappedComponent => {
-  const WithLogger = props => {
-    console.log(`${prefix}[Props]:`, props);
-    return <WrappedComponent {...props} />;
-  };
-
-  return HasLogger;
+const withSecretToLife = (WrappedComponent) => {
+  return class HOC extends Component {
+    constructor(props) {
+      super(props)
+      this.msg = 'If it feels good, do it';
+    }
+    render() {
+      return (
+        <WrappedComponent secretToLife={this.msg}
+                          {...this.props} />
+      );
+    }
+  }
 };
-export default withLogger;
+
+export default withSecretToLife;
 ```
-
-Enhance the component
-
-```js
-import withLogger form './withLogger';
-
-const MyComponent = (props) => <h1>MyComponent</h1>
-
-export default withLogger(MyComponent)
-```
-
-Logs props to the console on every render of the WrappedComponent.
 
 [More Samples](https://medium.com/dailyjs/react-composing-higher-order-components-hocs-3a5288e78f55)
+
+<!-- prettier-ignore -->
+***
+
+## Exercise
+
+Create a HOC to logs all props to the console on every render of the WrappedComponent.
+
+```js
+const Button = () => (
+  ...
+)
+export default withLogger(Button);
+```
+
+Optional: make if configurable
+
+```js
+export default withLogger('prefix')(Button);
+```
+
+<!-- prettier-ignore -->
+***
+
+## Exercise 2
+
+Create a HOC to handle forms (see SampleForm)
+
+```js
+// prettier-ignore
+const SampleForm = ({values, handleBlur, handleChange, handleSubmit}) => (
+  <form onSubmit={handleSubmit}>
+    <div className="form-group">
+      <input type="text" name="name" value={values.name}
+             onChange={handleChange} onBlur={handleBlur} />
+    </div>
+    <button className="btn btn-default" type="submit">Submit</button>
+  </form>
+);
+```
+
+```js
+export default withForm({
+  initialValues: { name: '', email: '' },
+  onSubmit: values => {
+    console.log('onSubmit', values);
+  },
+})(SampleForm);
+```
+
+---
+
+# Error<br>Boundery
+
+> Error boundaries are React components that catch JavaScript errors anywhere in their child component tree, log those errors, and display a fallback UI
+
+<!-- prettier-ignore -->
+***
+
+### ErrorBoundery
+
+```jsx
+export default class ErrorBoundery extends Component {
+  state = {
+    hasError: false,
+  };
+
+  static getDerivedStateFromError(error) {
+    // Update state so the next render will show the fallback UI.
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, info) {
+    console.log('Error:', error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <div className="error">Oops, error occured</div>;
+    }
+    return this.props.children;
+  }
+}
+```
+
+<!-- prettier-ignore -->
+***
+
+## Use of ErrorBoundery
+
+```jsx
+import ErrorBoundery from './errorBoundery';
+
+const App = () => (
+  <ErrorBoundary>
+    <MyForm />
+  </ErrorBoundary>;
+)
+
+export default App;
+```
+
+Error Bounderies can be placed on any level
 
 ---
 
@@ -323,7 +485,7 @@ Logs props to the console on every render of the WrappedComponent.
 
 <!-- prettier-ignore -->
 ```jsx
-const SECRET_TO_LIFE = 42;
+const SECRET_TO_LIFE = 'If it feels good, do it';
 
 default export class ShareSecretToLife extends Component {
   render() {
@@ -384,23 +546,80 @@ const ShareSecretWithWorld = () => (
 
 ## Exercise
 
-Modify the ErrorBoudery with an render prop so we can custimize the error rendering
+Modify the ErrorBoudery with an render prop so we can have an optional customized error rendering
+
+Optional: Create Repeat component
+
+```
+<Repeat numTimes={10} render={
+  (total, index) => <p>number {index} of {total}</p>
+}
+</Repeat>
+```
+
+Optional: Create ForEach component
+
+```
+<ul>
+  <ForEach data={myArray}>
+    {(item) => <li>{item.name}</li> }
+  </ForEach>
+</ul>
+```
+
+<!-- prettier-ignore -->
+***
+
+### Formik with Render Props
+
+```html
+<Formik
+  initialValues={{
+    firstName: '',
+    email: '',
+  }}
+  onSubmit={values => {
+    console.log(values);
+  }}
+  render={() => (
+    <Form>
+      <label htmlFor="firstName">First Name</label>
+      <Field name="firstName" />
+
+      <label htmlFor="email">Email</label>
+      <Field name="email" type="email" />
+
+      <button type="submit">Submit</button>
+    </Form>
+  )}
+/>
+```
 
 ---
 
 # Context
 
-> Using context, we can avoid passing props through intermediate elements:
+Using context, we can avoid passing props through intermediate elements
 
 <!-- prettier-ignore -->
 ***
 
 ## Context
 
+<img src="./images/prop-drilling-v-context.png">
+
+<!-- prettier-ignore -->
+***
+
+## Context Provider
+
 Provide a value
 
 ```jsx
-const ThemeContext = React.createContext('light');
+// Create the context
+export const ThemeContext = React.createContext('light');
+
+// Component providing the context value
 export default class App extends React.Component {
   render() {
     return (
@@ -410,14 +629,12 @@ export default class App extends React.Component {
     );
   }
 }
-
-export ThemeContext;
 ```
 
 <!-- prettier-ignore -->
 ***
 
-### Context
+### Context Consumer
 
 Some component deeper in the hierarchy...
 
@@ -428,7 +645,7 @@ const Toolbar = props => <ThemedButton />;
 Use a Consumer to read the current theme context. <br>React will find the closest theme Provider above and use its value.
 
 ```jsx
-import ThemeContext from './themeContext';
+import { ThemeContext } from './app';
 
 const ThemedButton = props => (
   <ThemeContext.Consumer>
@@ -437,7 +654,7 @@ const ThemedButton = props => (
 );
 ```
 
-Use the render prop to use it's valid
+A "render prop" is used to get the value.
 
 <!-- prettier-ignore -->
 ***
@@ -447,14 +664,7 @@ Use the render prop to use it's valid
 Context simplified (available on React 16.6)
 
 ```jsx
-import ThemeContext from './themeContext';
-```
-
-```jsx
-const ThemedButton = (props, context) => (
-  <Button {...props} theme={context.theme} />}
-);
-ThemedButton.contextType = ThemeContext;
+import { ThemeContext } from './app';
 ```
 
 ```jsx
@@ -487,18 +697,41 @@ export const ThemeContext = React.createContext({
 <!-- prettier-ignore -->
 ***
 
-### Context - EXAMPLE
+## Exercise
 
-You can consuming Context with a HOC
+Avoid prop drilling by using StateProvider
+
+From
+
+```html
+<div>
+  <Red number={this.state.number} />
+  <Green
+    number={this.state.number}
+    onIncrement={this.handleIncrement}
+  />
+</div>
+```
+
+To
+
+```html
+<StateProvider initialValue={10}>
+  <Red>
+  <Green>
+</StateProvider>
+```
+
+<!-- prettier-ignore -->
+***
+
+### Consume Context with a HOC
 
 ```js
 const ThemeContext = React.createContext('light');
 
-export default (withTheme = Component => {
-  // ...and returns another component...
+export default withTheme = Component => {
   return props => {
-    // ... and renders the wrapped component with the context theme!
-    // Notice that we pass through any additional props as well
     return (
       <ThemeContext.Consumer>
         {theme => <Component {...props} theme={theme} />}
@@ -516,37 +749,76 @@ const Button = ({ theme, ...rest }) => {
 const ThemedButton = withTheme(Button);
 ```
 
+<!-- prettier-ignore -->
+***
+
+### Unstated
+
+```js
+import { Provider, Subscribe, Container } from 'unstated';
+class CounterContainer extends Container {
+  state = {
+    count: 0,
+  };
+  increment() {
+    this.setState({ count: this.state.count + 1 });
+  }
+}
+```
+
+```js
+<Subscribe to={[CounterContainer]}>
+  {counter => (
+    <div>
+      <button onClick={() => counter.decrement()}>-</button>
+      <span>{counter.state.count}</span>
+    </div>
+  )}
+</Subscribe>
+```
+
+```html
+<Provider>
+  <Counter />
+</Provider>
+```
+
 ---
 
-# Error<br>Boundery
+# Hooks
 
-> Error boundaries are React components that catch JavaScript errors anywhere in their child component tree, log those errors, and display a fallback UI
+> Hooks are a new feature proposal that lets you use state and other React features without writing a class
+
+for React 16.7 (1Q2019) 🙁
 
 <!-- prettier-ignore -->
 ***
 
-### ErrorBoundery: Basic Sample
+### A Classic component
 
-```jsx
-export default class ErrorBoundery extends Component {
+```js
+import React, { Component } from 'react';
+
+export class Users extends Component {
   state = {
-    hasError: false,
+    users: [],
   };
 
-  static getDerivedStateFromError(error) {
-    // Update state so the next render will show the fallback UI.
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error, info) {
-    console.log('Error:', error, info);
+  async componentDidMount() {
+    const res = await axios.get('users.json');
+    this.setState({
+      users: res.data,
+    });
   }
 
   render() {
-    if (this.state.hasError) {
-      return <div className="error">Oops, error occured</div>;
-    }
-    return this.props.children;
+    return (
+      <ul>
+        {this.state.users.map(user => {
+          return <li key={user.id}>{user.name}</li>;
+        })}
+      </ul>
+    );
   }
 }
 ```
@@ -554,54 +826,58 @@ export default class ErrorBoundery extends Component {
 <!-- prettier-ignore -->
 ***
 
-## Use of ErrorBoundery
+### Using hooks
 
-```jsx
-import ErrorBoundery from './errorBoundery';
+```js
+import React, { Component, useState } from 'react';
 
-const App = () => (
-  <ErrorBoundary>
-    <MyForm />
-  </ErrorBoundary>;
-)
+export const Users = () => {
+  const [users, setUsers] = useState([]);
 
-export default App;
+  useEffect(async () => {
+    const res = await axios.get('users.json');
+    setUsers(res.data);
+  });
+
+  return (
+    <ul>
+      {users.map(user => {
+        return <li key={user.id}>{user.name}</li>;
+      })}
+    </ul>
+  );
+};
 ```
-
-Error Bounderies can be placed on any level
 
 <!-- prettier-ignore -->
 ***
 
-## Exercise
+### Render Props vs Hooks
 
-ErrorBoundery with custom rendering
-
-<!-- prettier-ignore -->
 ```jsx
-export default class ErrorBoundery extends Component {
-  static propTypes = {
-    children: PropTypes.onOfType([
-      PropTypes.node,
-      PropTypes.arrayOf(PropTypes.node),
-    ]),
-    render: PropTypes.func.isRequired,
-  };
-
-  // ...
-
-  render() {
-    if (this.state.hasError) {
-      // allow custom rendering of the error
-      return this.props.render(
-        this.state.error,
-        this.state.errorInfo
-      );
-    }
-    return this.props.children;
-  }
-}
+<ScrollPosition>
+  {position => (
+    <div>
+      <p>You are at {position}</p>
+    </div>
+  )}
+</ScrollPosition>
 ```
+
+vs
+
+```js
+const MyComp = () => {
+  let position = useScrollPosition();
+  return (
+    <div>
+      <p>You are at {position}</p>
+    </div>
+  );
+};
+```
+
+See also [awesome-react-hooks](https://github.com/rehooks/awesome-react-hooks)
 
 ---
 
@@ -637,3 +913,7 @@ Patterns
 ---
 
 # Ready to build you React Apps
+
+```
+
+```
